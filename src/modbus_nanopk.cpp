@@ -101,6 +101,33 @@ void modbus::load_entries()
     addentry(dataentry("boilerState", 178, modbus_data_type::Float, 
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("actualFlowTemp", 144, modbus_data_type::Float, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("setFlowTemp", 146, modbus_data_type::Float, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1001", 1000, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1002", 1001, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1003", 1002, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1004", 1003, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1005", 1004, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1006", 1005, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
+    addentry(dataentry("digital 1007", 1006, modbus_data_type::Integer, 
+                            functiontype::ReadHoldingRegisters, 
+                            seconds(10)), std::chrono::steady_clock::now());
 }
 
 bool modbus::wait_for_exit(std::chrono::steady_clock::duration d)
@@ -137,8 +164,11 @@ modbus::readresult modbus::process_entry(dataentries::iterator &fe)
                 }
 
                 std::cout << "result for  " << fe->second.varname << " (" 
-                          << fe->second.readaddr << "): "
-                          << data << std::endl;
+                          << fe->second.readaddr << "): 0x"
+                          << std::hex << std::setfill('0') << std::setw(4) 
+                          << data 
+                          << std::setfill(' ')
+                          << std::dec << std::endl;
 
                 readval = data;
             }

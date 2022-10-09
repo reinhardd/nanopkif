@@ -43,8 +43,9 @@ enum daydefinition:uint8_t
     monday          = (1 << 1),
     tuesday         = (1 << 2),
     wednesday       = (1 << 3),
-    friday          = (1 << 4),
-    saturday        = (1 << 5)
+    thursday        = (1 << 4),
+    friday          = (1 << 5),
+    saturday        = (1 << 6)
 };
 
 using startstopdef = std::pair<uint16_t, uint16_t>;
@@ -102,6 +103,13 @@ struct dataentry
               seconds i);
     // bool operator<(const dataentry &rhs) const;
 };
+
+std::ostream &operator<<(std::ostream &s, const std::monostate &);
+std::ostream &operator<<(std::ostream &s, const dayschedule &);
+std::ostream &operator<<(std::ostream &s, const weekdayschedule &);
+std::ostream &operator<<(std::ostream &s, const std::monostate &);
+
+
 
 } // nanopk
 #endif

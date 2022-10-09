@@ -5,7 +5,7 @@
 #include <iomanip>
 
 #include "modbus_nanopk.h"
-#include "nanopk_visualizer.h"
+#include "nanopk_observer.h"
 
 namespace {
     auto modbus_t_deleter = [](modbus_t *v) { modbus_free(v); };
@@ -14,7 +14,7 @@ namespace {
 namespace nanopk
 {
     
-modbus::modbus(visualizer *obs, std::string &&dev, std::uint16_t port)
+modbus::modbus(observer *obs, std::string &&dev, std::uint16_t port)
     : _device(dev)
     , _port(port)
     , _modbus(nullptr, modbus_t_deleter)
@@ -89,12 +89,53 @@ void modbus::addentry(dataentry &&de, timepoint tp)
 
 void modbus::load_entries()
 {
-    addentry(dataentry("outdoorTemp", 8, modbus_data_type::Float, 
+    addentry(dataentry("actualSwitchUnit", 0, modbus_data_type::Float,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(240)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("setSwitchUnit", 2, modbus_data_type::Float,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("outdoorTemp", 8, modbus_data_type::Float,
                            functiontype::ReadHoldingRegisters, 
                            seconds(30)), std::chrono::steady_clock::now());
     addentry(dataentry("outdoorAverageTemp", 6, modbus_data_type::Float, 
                            functiontype::ReadHoldingRegisters, 
                            seconds(60)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("boilerTemp1", 10, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+    addentry(dataentry("boilerTemp2", 12, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+    addentry(dataentry("boilerTemp3", 14, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+    addentry(dataentry("boilerTempA", 16, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("stoveTemp", 82, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+    addentry(dataentry("stoveSetTemp", 84, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("bufferTopTemp", 122, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+    addentry(dataentry("bufferBottomTemp", 124, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("exhaustTemp", 126, modbus_data_type::Float,
+                           functiontype::ReadHoldingRegisters,
+                           seconds(60)), std::chrono::steady_clock::now());
+
+
     addentry(dataentry("burnerState", 86, modbus_data_type::Float, 
                            functiontype::ReadHoldingRegisters, 
                            seconds(10)), std::chrono::steady_clock::now());
@@ -103,10 +144,13 @@ void modbus::load_entries()
                             seconds(10)), std::chrono::steady_clock::now());
     addentry(dataentry("actualFlowTemp", 144, modbus_data_type::Float, 
                             functiontype::ReadHoldingRegisters, 
-                            seconds(10)), std::chrono::steady_clock::now());
+                            seconds(10)), std::chrono::steady_clock::now());       
     addentry(dataentry("setFlowTemp", 146, modbus_data_type::Float, 
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
+
+
+
     addentry(dataentry("digital 1001", 1000, modbus_data_type::Integer, 
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
@@ -128,12 +172,32 @@ void modbus::load_entries()
     addentry(dataentry("digital 1007", 1006, modbus_data_type::Integer, 
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("B1DayCLK", 2000, modbus_data_type::dayschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("B1WCLK1a", 2004, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("B1WCLK1b", 2009, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
 }
 
 bool modbus::wait_for_exit(std::chrono::steady_clock::duration d)
 {
     std::unique_lock<std::mutex> lck(_mtx);
     return _cnd.wait_for(lck, d, [this]{ return _term;});
+}
+
+dayschedule frombytes(uint16_t *data)
+{
+    dayschedule ds;
+    ds.s1.first = data[0];
+    ds.s1.second = data[2];
+    ds.s2.first = data[1];
+    ds.s2.second = data[3];
+    return ds;
 }
 
 modbus::readresult modbus::process_entry(dataentries::iterator &fe)
@@ -162,14 +226,14 @@ modbus::readresult modbus::process_entry(dataentries::iterator &fe)
                               << std::endl;
                     return readresult::unexpected_size;
                 }
-
+#if defined(TRACE_VARS)
                 std::cout << "result for  " << fe->second.varname << " (" 
                           << fe->second.readaddr << "): 0x"
                           << std::hex << std::setfill('0') << std::setw(4) 
                           << data 
                           << std::setfill(' ')
                           << std::dec << std::endl;
-
+#endif
                 readval = data;
             }
             break;
@@ -201,20 +265,69 @@ modbus::readresult modbus::process_entry(dataentries::iterator &fe)
                               << std::endl;
                     return readresult::unexpected_size;
                 }                
+#if defined(TRACE_VARS)
                 std::cout << "result for  " << fe->second.varname << " (" 
                           << fe->second.readaddr << "): "
                           << data.f << std::endl;
+#endif
                 readval = data.f;
+            }
+            break;
+        case modbus_data_type::dayschedule:
+            {
+                uint16_t data[4];
+                int r = modbus_read_registers(_modbus.get(), fe->second.readaddr, 4, data);
+                if (r == -1)
+                {
+                    std::cout << "dayschedule read failed for addr "
+                              << fe->second.readaddr << std::endl;
+                    return readresult::invalid_response;
+                }
+                if (r != 4)
+                {
+                    std::cout << "dayschedule read failed for addr "
+                              << fe->second.readaddr
+                              << " reported wrong response length " << r
+                              << " expected 4"
+                              << std::endl;
+                    return readresult::unexpected_size;
+                }
+                readval = frombytes(data);
+            }
+            break;
+        case modbus_data_type::weekschedule:
+            {
+                uint16_t data[5];
+                int r = modbus_read_registers(_modbus.get(), fe->second.readaddr, 5, data);
+                if (r == -1)
+                {
+                    std::cout << "weekdayschedule read failed for addr "
+                              << fe->second.readaddr << std::endl;
+                    return readresult::invalid_response;
+                }
+                if (r != 5)
+                {
+                    std::cout << "weekdayschedule read failed for addr "
+                              << fe->second.readaddr
+                              << " reported wrong response length " << r
+                              << " expected 4"
+                              << std::endl;
+                    return readresult::unexpected_size;
+                }
+                weekdayschedule wds;
+                wds.day = static_cast<daydefinition>(data[0]);
+                wds.schedule = frombytes(&data[1]);
+                readval = wds;
             }
             break;
         default:
             break;
     }
-    bool changed = (fe->second.result == readval);
-    if (changed)
+    bool unchanged = (fe->second.result == readval);
+    if (!unchanged)
         fe->second.result = readval;
     fe->second.tstamp = std::chrono::system_clock::now();
-    return changed ? readresult::valid : readresult::valid_unchanged;
+    return unchanged ? readresult::valid_unchanged : readresult::valid;
 }
 
 void modbus::process_loop()
@@ -228,6 +341,34 @@ void modbus::process_loop()
         if (diff < std::chrono::microseconds(0))
         {
             readresult r = process_entry(fe);
+            switch (r)
+            {
+                case readresult::invalid_response:
+                    std::cerr << "invalid response\n";
+                    break;
+                case readresult::timeout:
+                    std::cerr << "timeout\n";
+                    break;
+                case readresult::unexpected_size:
+                    std::cerr << "internal error\n";
+                    throw std::runtime_error("internal error: wrong response size");
+                    break;
+                case readresult::valid:
+                    // std::cout << "changed\n";
+                    {
+                        eventdata d;
+                        d.name = fe->second.varname;
+                        d.data = fe->second.result;
+                        d.tstamp = fe->second.tstamp;
+                        _observer->on_change(d);
+                    }
+                    break;
+                case readresult::valid_unchanged:
+                    // std::cout << "unchanged\n";
+                    break;
+
+            }
+
             last_transmit = std::chrono::steady_clock::now();
             auto ntime = last_transmit + fe->second.pollintervall;
             addentry(fe->second, ntime);
@@ -237,9 +378,11 @@ void modbus::process_loop()
         }
         else
         {
-            std::cout << "sleep for " 
+#if defined(TRACE_TIMING)
+            std::cout << "sleep for "
                       << std::chrono::duration_cast<std::chrono::seconds>(diff).count() 
                       << " seconds\n";
+#endif
             if (wait_for_exit(diff))
             {
                 std::cout << "exit " << __PRETTY_FUNCTION__ << std::endl;

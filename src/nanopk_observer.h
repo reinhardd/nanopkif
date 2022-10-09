@@ -2,6 +2,8 @@
 #define __nanopk_observer_h
 #pragma once
 
+#include "dataentry.h"
+
 namespace nanopk 
 {
     
@@ -11,10 +13,10 @@ struct eventdata {
     std::string name;
 };    
     
-class visualizer
+class observer
 {
 public:
-    virtual ~visualizer() = default;
+    virtual ~observer() = default;
     virtual void disconnected() = 0;
     virtual void update() = 0;
     virtual void on_change(const eventdata &d) = 0;

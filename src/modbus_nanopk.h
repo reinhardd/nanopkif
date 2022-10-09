@@ -16,7 +16,7 @@
 #include <modbus/modbus-tcp.h>
 
 #include "dataentry.h"
-#include "nanopk_visualizer.h"
+#include "nanopk_observer.h"
 
 namespace nanopk 
 {
@@ -37,9 +37,9 @@ class modbus
     std::mutex                  _mtx;
     std::condition_variable     _cnd;
     bool                        _term;
-    visualizer                   *_observer;
+    observer                   *_observer;
 public:
-    modbus(visualizer *, std::string &&dev, std::uint16_t port = 502);
+    modbus(observer *, std::string &&dev, std::uint16_t port);
     ~modbus();
     bool start();    
 

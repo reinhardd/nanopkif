@@ -135,17 +135,16 @@ void modbus::load_entries()
                            functiontype::ReadHoldingRegisters,
                            seconds(60)), std::chrono::steady_clock::now());
 
-
     addentry(dataentry("burnerState", 86, modbus_data_type::Float, 
                            functiontype::ReadHoldingRegisters, 
                            seconds(10)), std::chrono::steady_clock::now());
     addentry(dataentry("boilerState", 178, modbus_data_type::Float, 
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
-    addentry(dataentry("actualFlowTemp", 144, modbus_data_type::Float, 
+    addentry(dataentry("actualFlowTempHK1", 144, modbus_data_type::Float,
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());       
-    addentry(dataentry("setFlowTemp", 146, modbus_data_type::Float, 
+    addentry(dataentry("setFlowTempHK1", 146, modbus_data_type::Float,
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
 
@@ -173,15 +172,71 @@ void modbus::load_entries()
                             functiontype::ReadHoldingRegisters, 
                             seconds(10)), std::chrono::steady_clock::now());
 
-    addentry(dataentry("B1DayCLK", 2000, modbus_data_type::dayschedule,
+    addentry(dataentry("boiler1DayCLK", 2000, modbus_data_type::dayschedule,
                             functiontype::ReadHoldingRegisters,
                             seconds(120)), std::chrono::steady_clock::now());
-    addentry(dataentry("B1WCLK1a", 2004, modbus_data_type::weekschedule,
+    addentry(dataentry("boiler1WCLKa", 2004, modbus_data_type::weekschedule,
                             functiontype::ReadHoldingRegisters,
                             seconds(120)), std::chrono::steady_clock::now());
-    addentry(dataentry("B1WCLK1b", 2009, modbus_data_type::weekschedule,
+    addentry(dataentry("boiler1WCLKb", 2009, modbus_data_type::weekschedule,
                             functiontype::ReadHoldingRegisters,
                             seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("boiler1WCLKc", 2014, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("boiler1WCLKd", 2019, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("boiler1WCLKe", 2024, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("boiler1WCLKf", 2029, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+    addentry(dataentry("boiler1WCLKg", 2034, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(120)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("setTempBoiler1", 2039, modbus_data_type::Integer,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(240)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("circulationPumpDCLK", 2040, modbus_data_type::dayschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+
+    addentry(dataentry("heatingDCLK1", 2049, modbus_data_type::dayschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1a", 2054, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1b", 2059, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1c", 2064, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1d", 2069, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1e", 2074, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1f", 2079, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingWCLK1g", 2084, modbus_data_type::weekschedule,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingDayRoomTemp1", 2089, modbus_data_type::Float,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+    addentry(dataentry("heatingNightRoomTemp1", 2091, modbus_data_type::Float,
+                            functiontype::ReadHoldingRegisters,
+                            seconds(300)), std::chrono::steady_clock::now());
+
+
 }
 
 bool modbus::wait_for_exit(std::chrono::steady_clock::duration d)

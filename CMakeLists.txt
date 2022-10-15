@@ -20,6 +20,10 @@ add_executable(nanopkif
     src/nanopk_observer.h
     src/console_info.cpp
     src/console_info.h
+    src/mqtt_backend.cpp
+    src/mqtt_backend.h
+    src/mqtt_backend_impl.cpp
+    src/mqtt_backend_impl.h
 )
 
 target_compile_features(nanopkif 

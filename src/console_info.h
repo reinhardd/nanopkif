@@ -1,5 +1,6 @@
 #ifndef CONSOLE_INFO_H
 #define CONSOLE_INFO_H
+#pragma once
 
 #include <string>
 #include <map>
